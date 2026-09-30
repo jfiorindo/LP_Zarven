@@ -1,0 +1,55 @@
+/* Lightweight, local graphics: no animation framework or video assets. */
+.scroll-progress{width:100%;transform:scaleX(0);transform-origin:left;transition:none}
+.cursor-glow{display:none}
+body::before{display:none}
+.hero::before{animation:none}
+.system-glow{filter:none;background:radial-gradient(ellipse,rgba(22,213,209,.2),transparent 68%)}
+.solutions::before{filter:none;background:radial-gradient(circle,rgba(22,213,209,.1),transparent 68%)}
+.system-panel{backdrop-filter:none;background:linear-gradient(145deg,#0f2a31f5,#07161bf5)}
+.system-panel::after{top:-50%;animation:scan-efficient 7s linear infinite}
+.live{animation:status-breathe 3s ease-in-out infinite}
+.flow-node.active{animation:status-breathe 3s ease-in-out infinite}
+.btn::before{left:-45%;filter:none;background:linear-gradient(90deg,transparent,#ffffff60,transparent);transition:transform .6s}
+.btn:hover::before{left:-45%;transform:translateX(650%) skewX(-24deg)}
+.hero h1{overflow-wrap:anywhere}
+.btn{white-space:normal;text-align:center}
+.product-list{margin-top:28px}
+.product-card::after{pointer-events:none}
+.system-visual{isolation:isolate}
+.orbital-field{position:absolute;inset:-45px -32px;z-index:-1;pointer-events:none;display:grid;place-items:center}
+.orbital-ring{position:absolute;width:100%;aspect-ratio:1;border:1px solid #38e8df25;border-radius:50%;animation:orbital-turn 30s linear infinite}
+.orbital-ring::before{content:'';position:absolute;left:50%;top:-3px;width:6px;height:6px;border-radius:50%;background:#8dfff7;box-shadow:0 0 14px #16d5d1}
+.orbital-ring:nth-child(2){width:112%;border-style:dashed;border-color:#38e8df14;animation-duration:46s;animation-direction:reverse}
+.orbital-ring:nth-child(3){width:88%;border-color:#38e8df38;animation-duration:22s}
+.orbital-ring:nth-child(3)::before{width:4px;height:4px;background:#fff}
+.tech-art{position:relative;height:154px;flex-shrink:0;margin:25px 0 0;border:1px solid #63f4ed19;border-radius:14px;overflow:hidden;background:radial-gradient(ellipse at center,#16d5d10c,transparent 70%),linear-gradient(#63f4ed06 1px,transparent 1px),linear-gradient(90deg,#63f4ed06 1px,transparent 1px);background-size:auto,24px 24px,24px 24px;pointer-events:none}
+.tech-art svg{width:100%;height:100%}
+.circuit-wire{fill:none;stroke:#63f4ed30;stroke-width:1.4}
+.circuit-packet{fill:none;stroke:#71fff0;stroke-width:2;stroke-dasharray:7 93;animation:packet-travel 4s linear infinite}
+.circuit-packet.late{animation-delay:-2s}
+.circuit-node{fill:#102f35;stroke:#40d9d180;stroke-width:1}
+.chip-core{fill:#0a262b;stroke:#63f4ed;stroke-width:1.2}
+.core-halo{transform-box:fill-box;transform-origin:center;animation:core-ripple 3.8s ease-out infinite}
+.browser-frame{fill:#0a2026;stroke:#63f4ed60;stroke-width:1}
+.browser-block{fill:#163940;stroke:#63f4ed19;stroke-width:1}
+.browser-accent{fill:#39e2d8}
+.browser-sweep{animation:browser-pass 5s ease-in-out infinite}
+.process-num{transition:background .5s,color .5s,box-shadow .5s}
+.process-step.visible .process-num{background:#d3f3ec;box-shadow:0 0 0 5px #00a29e0a}
+.process-step.visible .process-num::after{content:'';position:absolute;inset:-5px;border:1px solid #009b9d50;border-radius:50%;animation:step-ring 1.3s ease-out both}
+.horizon{position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:.65}
+.horizon-disc{position:absolute;width:min(850px,130vw);aspect-ratio:1;left:50%;top:60%;margin-left:max(-425px,-65vw);border:1px solid #63f4ed38;border-radius:50%;transform:rotateX(68deg);box-shadow:0 0 0 45px #16d5d108,0 0 0 90px #16d5d105}
+.horizon-disc::after{content:'';position:absolute;inset:-1px;border:2px solid transparent;border-top-color:#63f4ed;border-radius:50%;animation:orbital-turn 12s linear infinite}
+.effects-ready section,.effects-ready .ticker{--motion-state:paused}
+.effects-ready .motion-active{--motion-state:running}
+.effects-ready section *,.effects-ready section::before,.effects-ready section::after,.effects-ready section *::before,.effects-ready section *::after,.effects-ready .ticker *{animation-play-state:var(--motion-state)!important}
+.page-hidden *,.page-hidden *::before,.page-hidden *::after{animation-play-state:paused!important}
+@keyframes orbital-turn{to{transform:rotate(360deg)}}
+@keyframes packet-travel{to{stroke-dashoffset:-100}}
+@keyframes core-ripple{0%{transform:scale(.92);opacity:.6}100%{transform:scale(1.6);opacity:0}}
+@keyframes browser-pass{0%,15%{transform:translateY(-10px);opacity:0}25%,75%{opacity:.6}90%,100%{transform:translateY(90px);opacity:0}}
+@keyframes step-ring{from{transform:scale(.85);opacity:1}to{transform:scale(1.5);opacity:0}}
+@keyframes scan-efficient{from{transform:translateY(0)}to{transform:translateY(350%)}}
+@keyframes status-breathe{50%{opacity:.6}}
+@media(max-width:700px){.hero h1{font-size:clamp(36px,11.8vw,60px)}.orbital-field{display:none}.tech-art{height:130px}.system-panel{animation:none}.system-glow,.solutions::before{animation:none}.horizon-disc::after{animation-duration:20s}.product-card{transform:none!important}.floating-chip{backdrop-filter:none}.system-visual{overflow:hidden}.hero-actions,.final-inner{min-width:0}.flow-node{padding:8px 5px;font-size:7px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.chart-line{stroke-dashoffset:0}.core-halo{opacity:.2}.browser-sweep{display:none}.reveal{opacity:1;transform:none}.system-visual,.product-card{transform:none!important}}
