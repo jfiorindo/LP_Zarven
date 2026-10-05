@@ -149,7 +149,9 @@
     const rx = scene.type === 'circuit' ? -.47 : assembly ? -.12 : -.28 + Math.sin(progress*Math.PI)*.2;
     const cy = Math.cos(ry), sy = Math.sin(ry), cx = Math.cos(rx), sx = Math.sin(rx);
     const scale = Math.min(w,h) * (assembly ? .34 : .25);
-    const centerX = w * .5, centerY = h * (scene.type === 'devices' ? .46 : .5);
+    const centerX = w * .5;
+    const heroShift = scene.type === 'morph' && window.innerWidth > 980 ? .2 * progress : 0;
+    const centerY = h * (scene.type === 'devices' ? .46 : .5 + heroShift);
     const visibleFaces = [];
     const colors = [];
     for (let f = 0; f < 6; f++) {
