@@ -1,8 +1,10 @@
-import { mkdir, readFile, writeFile, copyFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { mkdir, readFile, writeFile, copyFile, rm } from 'node:fs/promises';
+import { resolve, dirname, sep } from 'node:path';
 
 // Static delivery: preserve HTML, metadata, URLs and source asset names verbatim.
 const root = resolve(import.meta.dirname, '..');
+const out = resolve(root, 'dist');
+if (!out.startsWith(root + sep)) throw new Error('Build output outside project');
 const html = await readFile(resolve(root, 'zarven-landing-page.html'), 'utf8');
 const files = new Set(['zarven-landing-page.html', 'model-worker.js']);
 for (const [, value] of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
@@ -11,7 +13,12 @@ for (const [, value] of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
   if (resolve(root, file).startsWith(root + '/') || resolve(root, file).startsWith(root + '\\')) files.add(file);
   else throw new Error(`Asset outside project: ${file}`);
 }
-await mkdir(resolve(root, 'dist'), { recursive: true });
-for (const file of files) await copyFile(resolve(root, file), resolve(root, 'dist', file));
-await writeFile(resolve(root, 'dist', 'index.html'), html);
+await rm(out, { recursive: true, force: true });
+await mkdir(out, { recursive: true });
+for (const file of files) {
+  const target = resolve(out, file);
+  await mkdir(dirname(target), { recursive: true });
+  await copyFile(resolve(root, file), target);
+}
+await writeFile(resolve(out, 'index.html'), html);
 console.log(`Build OK: ${files.size + 1} static files in dist/. Original page URL preserved.`);
