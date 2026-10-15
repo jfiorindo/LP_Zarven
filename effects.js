@@ -2,7 +2,6 @@
   'use strict';
   const root = document.documentElement;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  const fine = matchMedia('(hover:hover) and (pointer:fine) and (min-width:981px)');
   const visual = document.querySelector('.system-visual');
   const hero = document.querySelector('.hero');
   const cards = [...document.querySelectorAll('.product-card')];
@@ -10,6 +9,9 @@
   const progress = document.getElementById('scroll-progress');
   const counters = [...document.querySelectorAll('[data-count]')];
   const zones = [...document.querySelectorAll('section, .ticker')];
+  const supportsScrollTimeline = CSS.supports('animation-timeline', 'scroll(root block)');
+  const nativeProgress = () => supportsScrollTimeline && !reduced.matches;
+  const observeHeader = 'IntersectionObserver' in window;
 
   function decoration(className, markup, parent, prepend = false) {
     const element = document.createElement('div');
@@ -50,57 +52,29 @@
   });
   decoration('horizon', '<div class="horizon-disc"></div>', document.querySelector('.final-cta'), true);
 
-  // One scheduled update for scroll/pointer bursts, no idle render loop.
-  let frame = 0, pointer = null, scrollDirty = true;
+  // Native scrolling: one scheduled progress update per frame, no pointer loop.
+  let frame = 0;
   let scrollRange = Math.max(1, root.scrollHeight - innerHeight);
   function schedule() { if (!frame && !document.hidden) frame = requestAnimationFrame(update); }
-  function resetTilt(element) {
-    ['--parallax-x','--parallax-y','--tilt-x','--tilt-y','--card-x','--card-y','--card-light-x','--card-light-y'].forEach(key => element.style.removeProperty(key));
-  }
   function update() {
     frame = 0;
-    if (scrollDirty) {
-      header.classList.toggle('scrolled', scrollY > 24);
-      progress.style.transform = `scaleX(${Math.min(1, Math.max(0, scrollY / scrollRange))})`;
-      scrollDirty = false;
-    }
-    if (pointer && !reduced.matches && fine.matches) {
-      const {element, x, y} = pointer;
-      const rect = element.getBoundingClientRect();
-      const px = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
-      const py = Math.max(0, Math.min(1, (y - rect.top) / rect.height));
-      if (element === hero) {
-        visual.style.setProperty('--parallax-x', `${(px - .5) * 12}px`);
-        visual.style.setProperty('--parallax-y', `${(py - .5) * 9}px`);
-        visual.style.setProperty('--tilt-y', `${(px - .5) * 3}deg`);
-        visual.style.setProperty('--tilt-x', `${(py - .5) * -3}deg`);
-      } else {
-        element.style.setProperty('--card-x', `${(py - .5) * -4}deg`);
-        element.style.setProperty('--card-y', `${(px - .5) * 4}deg`);
-        element.style.setProperty('--card-light-x', `${px * 100}%`);
-        element.style.setProperty('--card-light-y', `${py * 100}%`);
-      }
-    }
-    pointer = null;
+    if (!observeHeader) header.classList.toggle('scrolled', scrollY > 24);
+    if (!nativeProgress()) progress.style.transform = `scaleX(${Math.min(1, Math.max(0, scrollY / scrollRange))})`;
   }
-  addEventListener('scroll', () => { scrollDirty = true; schedule(); }, {passive:true});
-  function measure() { scrollRange = Math.max(1, root.scrollHeight - innerHeight); scrollDirty = true; schedule(); }
+  addEventListener('scroll', () => { if (!nativeProgress() || !observeHeader) schedule(); }, {passive:true});
+  function measure() {
+    if (!nativeProgress()) scrollRange = Math.max(1, root.scrollHeight - innerHeight);
+    schedule();
+  }
   addEventListener('resize', measure, {passive:true});
   if ('ResizeObserver' in window) new ResizeObserver(measure).observe(document.body);
-  [hero, ...cards].forEach(element => {
-    element.addEventListener('pointermove', event => {
-      if (reduced.matches || !fine.matches || hero.classList.contains('model-enabled')) return;
-      pointer = {element, x:event.clientX, y:event.clientY}; schedule();
-    }, {passive:true});
-    element.addEventListener('pointerleave', () => { pointer = null; resetTilt(element === hero ? visual : element); });
-  });
 
   let counted = false, counterFrame = 0;
   function finishCounters() { cancelAnimationFrame(counterFrame); counters.forEach(el => el.textContent = el.dataset.count); }
   function count() {
     if (counted) return;
     counted = true;
-    if (reduced.matches || document.hidden) { finishCounters(); return; }
+    if (reduced.matches || root.dataset.scrollMotion === 'off' || document.hidden) { finishCounters(); return; }
     const start = performance.now();
     function tick(now) {
       const t = Math.min(1, (now - start) / 1200);
@@ -109,13 +83,22 @@
     }
     counterFrame = requestAnimationFrame(tick);
   }
+  let revealObserver;
   if ('IntersectionObserver' in window) {
+    const sentinel = decoration('header-sentinel', '', document.body, true);
+    new IntersectionObserver(([entry]) => header.classList.toggle('scrolled', !entry.isIntersecting)).observe(sentinel);
     root.classList.add('effects-ready');
     const zoneObserver = new IntersectionObserver(entries => entries.forEach(entry => entry.target.classList.toggle('motion-active', entry.isIntersecting)));
     zones.forEach(zone => zoneObserver.observe(zone));
-    const revealObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+    // Small per-row stagger, including the diagnostic cards (not their wrapper).
+    document.querySelector('.problem-grid').classList.remove('reveal');
+    document.querySelectorAll('.problem-card').forEach((el, index) => {
+      el.classList.add('reveal');
+      el.dataset.delay = String(index % 2);
+    });
+    revealObserver = new IntersectionObserver(entries => entries.forEach(entry => {
       if (entry.isIntersecting) { entry.target.classList.add('visible'); revealObserver.unobserve(entry.target); }
-    }), {threshold:.08});
+    }), {threshold:0, rootMargin:'0px 0px -12px 0px'});
     document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
     const counterObserver = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting) count();
@@ -124,23 +107,47 @@
     counterObserver.observe(visual);
     const links = [...document.querySelectorAll('.site-nav a')];
     const navObserver = new IntersectionObserver(entries => entries.forEach(entry => {
-      if (entry.isIntersecting) links.forEach(link => link.classList.toggle('active', link.hash === '#' + entry.target.id));
+      if (entry.isIntersecting) links.forEach(link => {
+        const active = link.hash === '#' + entry.target.id;
+        link.classList.toggle('active', active);
+        if (active) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
     }), {rootMargin:'-25% 0px -60%'});
     document.querySelectorAll('section[id]').forEach(el => navObserver.observe(el));
   } else {
     document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
     count();
   }
+  // The heading remains readable even if JS/observers are unavailable.
+  if (!reduced.matches && !location.hash && scrollY < 24) hero.classList.add('hero-enter');
+  hero.addEventListener('animationend', event => {
+    if (event.target.matches('.hero-actions')) hero.classList.remove('hero-enter');
+  });
+  document.addEventListener('focusin', event => {
+    const reveal = event.target.closest('.reveal');
+    if (reveal) { reveal.classList.add('visible'); revealObserver?.unobserve(reveal); }
+    hero.classList.remove('hero-enter');
+  });
   document.querySelectorAll('.faq-item').forEach(item => item.addEventListener('toggle', () => {
     if (item.open) document.querySelectorAll('.faq-item[open]').forEach(other => { if (other !== item) other.open = false; });
     measure();
   }));
   function motionPreference() {
-    if (reduced.matches) { finishCounters(); document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible')); }
-    resetTilt(visual); cards.forEach(resetTilt);
+    root.classList.toggle('native-scroll-progress', nativeProgress());
+    if (nativeProgress()) progress.style.removeProperty('transform');
+    measure();
+    if (reduced.matches) {
+      finishCounters();
+      hero.classList.remove('hero-enter');
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+      revealObserver?.disconnect();
+    }
   }
   reduced.addEventListener('change', motionPreference);
-  fine.addEventListener('change', motionPreference);
+  document.addEventListener('zarven:motionchange', () => {
+    if (root.dataset.scrollMotion === 'off') finishCounters();
+  });
   document.addEventListener('visibilitychange', () => {
     root.classList.toggle('page-hidden', document.hidden);
     if (document.hidden) { cancelAnimationFrame(frame); frame = 0; if (counted) finishCounters(); }

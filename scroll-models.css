@@ -13,7 +13,7 @@ body{overflow-x:clip}
 .model-stage canvas,.process-model canvas,.assembly-art canvas,.logo-assembly canvas{display:block;width:100%;height:100%}
 .model-stage::before,.process-model::before{content:'';position:absolute;inset:8%;border-radius:50%;background:radial-gradient(circle,#13d3cf16,transparent 65%);pointer-events:none}
 .model-track{position:absolute;left:12px;right:55%;bottom:80px;height:2px;background:#63f4ed25;overflow:hidden}
-.model-track::after{content:'';display:block;height:100%;background:#63f4ed;transform:scaleX(var(--scene-progress,0));transform-origin:left}
+.model-track-fill{display:block;height:100%;background:#63f4ed;transform:scaleX(0);transform-origin:left}
 .model-motion-toggle{position:absolute;z-index:6;bottom:-30px;right:0;min-height:36px;padding:8px 12px;border:1px solid #63f4ed38;border-radius:8px;background:#09181d;color:#b7dcd9;font:11px var(--font);cursor:pointer}
 .model-motion-toggle:hover{border-color:var(--cyan);color:var(--bright)}
 .model-motion-toggle:focus-visible{outline:2px solid var(--bright);outline-offset:3px}
@@ -25,7 +25,6 @@ body{overflow-x:clip}
 .assembly-art{position:relative;height:240px;margin:24px 0 0;overflow:hidden;border:1px solid #63f4ed19;border-radius:16px;contain:layout paint;background:radial-gradient(ellipse,#16d5d110,transparent 72%),linear-gradient(#63f4ed06 1px,transparent 1px),linear-gradient(90deg,#63f4ed06 1px,transparent 1px);background-size:auto,24px 24px,24px 24px;pointer-events:none}
 .logo-assembly{position:relative;width:200px;height:155px;margin:0 auto 24px;contain:layout paint;pointer-events:none}
 /* Remove pointer tilt where scroll-assembled models live. */
-.product-card.reveal.visible{transform:none!important}
 .product-card{transform-style:flat}
 .final-cta{padding-top:64px}
 .header-cta{flex-shrink:0;white-space:nowrap;min-height:42px;padding-inline:14px;font-size:13px}
@@ -34,3 +33,11 @@ body{overflow-x:clip}
 @media(max-width:980px){.hero.model-enabled{padding:110px 0 76px}.model-enabled .hero-grid{grid-template-columns:1fr;gap:20px;align-content:start}.model-enabled .hero-copy{max-width:720px}.model-enabled h1{font-size:clamp(32px,6vw,56px);max-width:100%;margin:18px 0}.model-enabled .hero-sub{font-size:15px;line-height:1.6}.model-enabled .hero-actions{display:flex;margin-top:20px;gap:8px}.model-enabled .hero-actions .btn{width:auto;font-size:12px;min-height:44px;padding:10px 12px}.model-enabled .system-visual{height:350px;max-height:none;width:100%;max-width:580px;margin-top:0}.model-stage{inset:0 0 32px}.model-enabled .system-panel{display:none}.model-enabled .chip-one{top:20px}.model-enabled .chip-two{bottom:10px}.model-track{bottom:15px;left:55%;right:0}.process-model{height:270px;max-width:480px}.model-enabled .hero-copy .eyebrow{font-size:10px}.model-motion-toggle{bottom:-32px}}
 @media(max-width:600px){.model-enabled .system-visual{height:300px}.model-enabled h1{font-size:clamp(32px,8.8vw,44px)}.model-enabled .hero-actions .btn{font-size:11px}.model-enabled .hero-sub{font-size:14px}.model-enabled .chip-one,.model-enabled .chip-two{font-size:8px;padding:8px}.assembly-art{height:200px}.logo-assembly{width:170px;height:135px}}
 @media(max-height:610px) and (min-width:981px){.model-enabled .system-visual{max-height:none;height:460px;margin-top:70px}.hero.model-enabled{padding-bottom:85px}}
+.model-motion-toggle:disabled{opacity:.65;cursor:default}
+/* Composited idle movement: the existing canvas bitmap needs no redraw. */
+.model-stage canvas{animation:model-float 12s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes model-float{
+  0%,100%{transform:translateY(2px)}
+  50%{transform:translateY(-5px)}
+}
+@media(prefers-reduced-motion:reduce){.model-stage canvas{animation:none!important;transform:none}}

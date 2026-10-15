@@ -9,8 +9,7 @@ body::before{display:none}
 .system-panel::after{top:-50%;animation:scan-efficient 7s linear infinite}
 .live{animation:status-breathe 3s ease-in-out infinite}
 .flow-node.active{animation:status-breathe 3s ease-in-out infinite}
-.btn::before{left:-45%;filter:none;background:linear-gradient(90deg,transparent,#ffffff60,transparent);transition:transform .6s}
-.btn:hover::before{left:-45%;transform:translateX(650%) skewX(-24deg)}
+.btn::before{display:none}
 .hero h1{overflow-wrap:anywhere}
 .btn{white-space:normal;text-align:center}
 .product-list{margin-top:28px}
@@ -36,7 +35,6 @@ body::before{display:none}
 .browser-sweep{animation:browser-pass 5s ease-in-out infinite}
 .process-num{transition:background .5s,color .5s,box-shadow .5s}
 .process-step.visible .process-num{background:#d3f3ec;box-shadow:0 0 0 5px #00a29e0a}
-.process-step.visible .process-num::after{content:'';position:absolute;inset:-5px;border:1px solid #009b9d50;border-radius:50%;animation:step-ring 1.3s ease-out both}
 .horizon{position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:.65}
 .horizon-disc{position:absolute;width:min(850px,130vw);aspect-ratio:1;left:50%;top:60%;margin-left:max(-425px,-65vw);border:1px solid #63f4ed38;border-radius:50%;transform:rotateX(68deg);box-shadow:0 0 0 45px #16d5d108,0 0 0 90px #16d5d105}
 .horizon-disc::after{content:'';position:absolute;inset:-1px;border:2px solid transparent;border-top-color:#63f4ed;border-radius:50%;animation:orbital-turn 12s linear infinite}
@@ -53,3 +51,120 @@ body::before{display:none}
 @keyframes status-breathe{50%{opacity:.6}}
 @media(max-width:700px){.hero h1{font-size:clamp(36px,11.8vw,60px)}.orbital-field{display:none}.tech-art{height:130px}.system-panel{animation:none}.system-glow,.solutions::before{animation:none}.horizon-disc::after{animation-duration:20s}.product-card{transform:none!important}.floating-chip{backdrop-filter:none}.system-visual{overflow:hidden}.hero-actions,.final-inner{min-width:0}.flow-node{padding:8px 5px;font-size:7px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.chart-line{stroke-dashoffset:0}.core-halo{opacity:.2}.browser-sweep{display:none}.reveal{opacity:1;transform:none}.system-visual,.product-card{transform:none!important}}
+
+/* Shared motion rhythm. Translate keeps entrances separate from hover transforms. */
+:root {
+  --ease-out: cubic-bezier(.25, .8, .25, 1);
+  --motion-fast: 280ms;
+  --motion-reveal: 900ms;
+}
+.reveal {
+  transition: opacity var(--motion-reveal) var(--ease-out),
+    translate var(--motion-reveal) var(--ease-out),
+    transform 360ms var(--ease-out), border-color 360ms ease,
+    background-color 360ms ease;
+}
+.effects-ready .reveal:not(.visible) { opacity: 0; translate: 0 10px; }
+.reveal.visible { opacity: 1; translate: none; }
+.reveal[data-delay='1'] { --reveal-delay: 80ms; }
+.reveal[data-delay='2'] { --reveal-delay: 160ms; }
+.reveal { transition-delay: var(--reveal-delay, 0ms), var(--reveal-delay, 0ms), 0ms, 0ms, 0ms; }
+.hero-enter .hero-copy > * {
+  animation: hero-arrive 1000ms var(--ease-out) both;
+}
+.hero-enter .hero-copy > h1 { animation-delay: 80ms; }
+.hero-enter .hero-sub { animation-delay: 160ms; }
+.hero-enter .hero-actions { animation-delay: 240ms; }
+@keyframes hero-arrive {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.site-header { transition: background-color 240ms ease, border-color 240ms ease; }
+.site-header.scrolled { backdrop-filter: none; background: rgba(6,16,20,.96); }
+.header-sentinel { position: absolute; inset: 0 auto auto 0; width: 1px; height: 24px; pointer-events: none; }
+.site-nav a { position: relative; padding-block: 12px; }
+.site-nav a::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 6px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 360ms var(--ease-out);
+}
+.site-nav a.active::after, .site-nav a:focus-visible::after { transform: scaleX(1); }
+.brand { transition: opacity var(--motion-fast) ease; }
+.btn, .model-motion-toggle {
+  transition: transform var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) ease, background-color var(--motion-fast) ease,
+    color var(--motion-fast) ease;
+}
+.btn-primary:hover { box-shadow: 0 12px 35px rgba(22,213,209,.2); }
+.btn:focus-visible, .model-motion-toggle:focus-visible { outline: 2px solid var(--bright); outline-offset: 4px; }
+.btn:active, .model-motion-toggle:active { transform: translateY(0) scale(.985); }
+.btn:focus-visible svg { transform: translate(2px, -2px); }
+.product-card::before { background: radial-gradient(ellipse at 50% 0, rgba(77,255,247,.07), transparent 65%); }
+.product-card:hover::after { transform: none; }
+.product-list li:hover { transform: none; }
+.problem-card { transition: background-color 360ms ease, opacity var(--motion-reveal) var(--ease-out), translate var(--motion-reveal) var(--ease-out); transition-delay: 0ms, var(--reveal-delay, 0ms), var(--reveal-delay, 0ms); }
+.problem-card:hover { color: var(--ink); background: rgba(0,155,157,.045); transform: none; }
+.problem-card:hover p { color: var(--muted-dark); }
+.problem-card:hover::after { transform: scale(1.08); }
+.problem-card:hover svg { filter: none; }
+.problem-card svg, .diff-icon { transition: transform 360ms var(--ease-out); }
+.faq-item summary { transition: color var(--motion-fast) ease; }
+.light-section :focus-visible { outline-color: var(--cyan-dark); }
+.faq-toggle { transition: transform 360ms var(--ease-out), background-color 360ms ease; }
+.faq-item[open] p { animation: answer-arrive 360ms var(--ease-out); }
+@keyframes answer-arrive { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.floating-chip { animation: none; backdrop-filter: none; }
+.ticker-track { animation-duration: 65s; }
+.system-panel::after, .horizon-disc::after { animation: none; }
+.live, .flow-node.active, .solutions::before { animation: none; }
+.flow-line::after { animation-duration: 6s; }
+.chart-line { filter: none; }
+.metric strong { font-variant-numeric: tabular-nums; }
+
+@media (hover: hover) and (pointer: fine) {
+  .site-nav a:hover::after { transform: scaleX(1); }
+  .brand:hover { opacity: .8; }
+  .product-card.visible:hover, .diff-item.visible:hover { transform: translateY(-2px); }
+  .problem-card:hover svg, .diff-item:hover .diff-icon { transform: translateY(-2px); }
+  .btn:hover svg { transform: translate(2px, -2px); }
+  .faq-item summary:hover { color: var(--cyan-dark); }
+  .ticker:hover .ticker-track { animation-play-state: paused !important; }
+}
+@media (hover: none), (pointer: coarse) {
+  .btn:hover, .btn:hover svg, .metric:hover { transform: none; }
+  .product-card:hover::before { opacity: 0; }
+  .problem-card:hover { background: transparent; }
+  .problem-card:hover svg, .problem-card:hover::after { transform: none; }
+  .model-motion-toggle { min-height: 44px; }
+}
+/* One pause control also stops the decorative CSS loops. */
+html[data-scroll-motion='off'] *,
+html[data-scroll-motion='off'] *::before,
+html[data-scroll-motion='off'] *::after { animation-play-state: paused !important; }
+html[data-scroll-motion='off'] .hero-copy > *,
+html[data-scroll-motion='off'] .faq-item p { animation: none !important; }
+html[data-scroll-motion='off'] .chart-line { stroke-dashoffset: 0; }
+@media (max-width: 700px) {
+  .effects-ready .reveal:not(.visible) { translate: 0 6px; }
+  .site-header.scrolled { backdrop-filter: none; background: rgba(6,16,20,.97); }
+}
+/* Native timeline stays synchronized with scrolling without JS style writes. */
+@supports (animation-timeline: scroll(root block)) {
+  .native-scroll-progress #scroll-progress {
+    animation: page-progress auto linear both;
+    animation-timeline: scroll(root block);
+    animation-play-state: running !important;
+  }
+}
+@keyframes page-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .effects-ready .reveal:not(.visible), .reveal { opacity: 1; translate: none; }
+  .btn:hover, .btn:active, .btn:hover svg, .btn:focus-visible svg, .metric:hover, .model-motion-toggle:active,
+  .product-card.visible:hover, .diff-item.visible:hover,
+  .problem-card:hover svg, .problem-card:hover::after, .diff-item:hover .diff-icon { transform: none; }
+}
